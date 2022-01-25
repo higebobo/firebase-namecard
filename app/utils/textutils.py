@@ -39,7 +39,7 @@ class MediaReader(CsvReader):
                     'mobile': row[19],
                     'mail': row[21],
                     'id': row[66].split('\\')[-1]
-                    #'fore': row[66],
-                    #'back': row[65]
+                    # 'fore': row[66],
+                    # 'back': row[65]
                 }
                 yield data

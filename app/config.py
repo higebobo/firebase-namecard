@@ -10,7 +10,7 @@ PROJECT_DIR = Path(APP_DIR).parent
 dotenv_path = os.path.join(PROJECT_DIR, '.env')
 load_dotenv(dotenv_path)
 
-## general
+# general
 PROJECT_NAME = 'namecard'
 DATA_DIR = os.path.join(PROJECT_DIR, 'data')
 IMAGE_DIR = os.path.join(DATA_DIR, 'image')
@@ -20,31 +20,31 @@ try:
 except:
     WAIT = 3
 
-## data
+# data
 #DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 CSV_PATH = os.path.join(DATA_DIR, os.getenv('CSV_FILE', 'data.csv'))
 
-## image
+# image
 try:
     IMAGE_SIZE = int(os.getenv('IMAGE_SIZE'))
 except:
     IMAGE_SIZE = 640
 try:
-    IMAGE_BIGGER_SIZE = int(os.getenv('IMAGE_BIGGER_SIZE'))
+    IMAGE_LIMIT_SIZE = int(os.getenv('IMAGE_LIMIT_SIZE'))
 except:
-    IMAGE_BIGGER_SIZE = 500000
+    IMAGE_LIMMIT_SIZE = 500000
 try:
     IMAGE_QUOLITY = int(os.getenv('IMAGE_QUOLITY'))
 except:
-    IMAGE_QUOLITY = 10
+    IMAGE_QUOLITY = 20
 
-## log
+# log
 DEBUG_LOG = os.path.join(LOG_DIR, 'debug.log')
 ERROR_LOG = os.path.join(LOG_DIR, 'error.log')
 LOG_MAX_BYTE = int(os.getenv('LOG_MAX_BYTE', '100000'))
 LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', '10'))
 
-## firebase
+# firebase
 FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID', '')
 FIREBASE_SERVICE_ACCOUNT_KEY = {
     'type': 'service_account',

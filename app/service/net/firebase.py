@@ -1,5 +1,6 @@
 # -*- mode: python -*- -*- coding: utf-8 -*-
 import os
+import time
 
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -8,7 +9,7 @@ from firebase_admin import (credentials, firestore)
 
 
 class Firebase(object):
-    def __init__(self, service_account_key, app_url, collection, logger):
+    def __init__(self, service_account_key, app_url, collection):
         if not (len(firebase_admin._apps)):
             cred = credentials.Certificate(service_account_key)
             firebase_admin.initialize_app(cred)
@@ -20,63 +21,47 @@ class Firebase(object):
             service_account_key)
         client = storage.Client(credentials=gauth_cred)
         self.bucket = client.get_bucket(app_url)
-        self.logger = logger
 
-    def insert(self, data, image_dir, overwrite_image=False,
-               by_filepath=False, verbose=False):
-        for x in data:
-            uid = x['id']
+    def insert_document(self, oid, data):
+        try:
+            self.ref.document(oid).set(data)
+            message = f'add {oid} into collection'
+            result = {'status': 'ok', 'message': message}
+        except Exception as e:
+            message = str(e)
+            result = {'status': 'ng', 'message': message}
 
-            # insert or update document
-            try:
-                self.ref.document(uid).set(x)
-                message = f'add {uid} into collection'
-                self.logger.info(message)
-                if verbose:
-                    print(message)
-            except Exception as e:
-                message = str(e)
-                self.logger.fatal(message)
-                if verbose:
-                    print(message)
+        return result
 
-            filepath = os.path.join(image_dir, uid)
-            if not os.path.exists(filepath):
-                if verbose:
-                    print(f'{filepath} not found')
-                    continue
+    def delete_document(self, oid):
+        try:
+            self.ref.document(oid).delete
+            message = f'delete {oid} from collection'
+            result = {'status': 'ok', 'message': message}
+        except Exception as e:
+            message = str(e)
+            result = {'status': 'ng', 'message': message}
 
-                blob = self.bucket.blob(uid)
-                if not overwrite_image:
-                    if blob.exists():
-                        if verbose:
-                            print(f'{uid}.png exists')
-                        continue
+        return result
 
-                try:
-                    if by_filepath:
-                        blob.upload_from_filename()
-                    else:
-                        img = Image.open(filepath)
-                        obj = io.BytesIO()
-                        img.thumbnail((config.IMAGE_SIZE, config.IMAGE_SIZE))
-                        size = os.path.getsize(filepath)
+    def insert_image_from_filename(self, oid, filepath, overwrite_image=False):
+        blob = self.bucket.blob(oid)
+        if not overwrite_image:
+            if blob.exists():
+                return {'message': f'{oid} exists'}
+        try:
+            blob.upload_from_filename(filepath)
+            return {'status': 'ok', 'message': f'upload {oid}'}
+        except Exception as e:
+            return {'status': 'ng', 'message': str(e)}
 
-                        if size > config.IMAGE_BIGGER_SIZE:
-                            img.save(obj, format='PNG',
-                                     quality=config.IMAGE_QUOLITY, optimize=True)
-                        else:
-                            img.save(obj, format='PNG')
-
-                        contents = obj.getvalue()
-                        obj.close()
-
-                        # upload
-                        blob.upload_from_string(contents, content_type='image/png')
-                        print(f'upload {uid}')
-
-                        time.sleep(config.WAIT)
-
-
-                except Exception as e:
-                    pass
+    def insert_image_from_string(self, oid, contents, overwrite_image=False):
+        blob = self.bucket.blob(oid)
+        if not overwrite_image:
+            if blob.exists():
+                return {'message': f'{oid} exists'}
+        try:
+            blob.upload_from_string(contents, content_type='image/png')
+            return {'status': 'ok', 'message': f'upload {oid}'}
+        except Exception as e:
+            return {'status': 'ng', 'message': str(e)}

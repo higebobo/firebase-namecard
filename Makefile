@@ -6,11 +6,11 @@ SHELL := /bin/bash
 # all targets are phony
 .PHONY: $(shell egrep -o ^[a-zA-Z_-]+: $(MAKEFILE_LIST) | sed 's/://')
 
-FIREBASE_API_KEY=this-is-a-secret-api-key
-FIREBASE_EMAIL=john@example.com
-FIREBASE_PASSWORD=doe
-FIREBASE_PROJECT_ID=myproject
-FIREBASE_TEST_DOCUMENT_ID=myid
+FIREBASE_PROJECT_ID=xxx
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nxxx\n-----END PRIVATE KEY-----\n"
+FIREBASE_CLIENT_EMAIL=xxx
+FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
+FIREBASE_COLLECTION=data
 
 # .env
 ifneq ("$(wildcard ./.env)","")
@@ -20,8 +20,16 @@ endif
 pip: ## Install package by pip
 	@pip install -r requirements.txt
 
-insert: ## Insert dat
-	@python -m app -m insert -v
+run: ## Insert dat
+	@python -m app -m insert -r -v
+
+test: test-verbose ## Run test
+
+test-quiet: ## Run test quiet
+	@py.test -s -m "not integration"
+
+test-verbose: ## Run test verbose
+	@py.test -s --verbose -m "not integration"
 
 help: ## Print this help
 	@echo 'Usage: make [target]'
